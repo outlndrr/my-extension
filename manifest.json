@@ -1,0 +1,78 @@
+{
+  "manifest_version": 3,
+  "minimum_chrome_version": "123",
+  "name": "Outlndrr Extensions",
+  "version": "0.3.0",
+  "description": "Независимые улучшения браузера: HTTP/SOCKS5-прокси, улучшения YouTube-трансляций и скрытие переключения вкладок от сайтов.",
+  "permissions": [
+    "storage",
+    "proxy",
+    "scripting",
+    "webRequest",
+    "webRequestAuthProvider"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "settings/index.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Outlndrr Extensions",
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "32": "assets/icons/icon-32.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "features/youtube-theater/player-state.js"
+      ],
+      "world": "MAIN",
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "features/youtube-theater/content.js"
+      ],
+      "css": [
+        "features/youtube-theater/style.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/live_chat*"
+      ],
+      "exclude_matches": [
+        "https://www.youtube.com/live_chat_replay*"
+      ],
+      "js": [
+        "features/youtube-full-chat/content.js"
+      ],
+      "css": [
+        "features/youtube-full-chat/style.css"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+html[data-oe-youtube-full-chat] yt-live-chat-header-renderer #view-selector tp-yt-paper-listbox#menu > a:first-of-type {
+  display: none !important;
+}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru" data-theme="sage">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Outlndrr Extensions</title>
+    <link rel="icon" href="../assets/icons/icon-32.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+    <script src="popup.js" defer></script>
+  </head>
+  <body class="popup">
+    <header class="brand">
+      <img class="mark" src="../assets/brand/cat.jpg" width="40" height="40" alt="">
+      <div>
+        <h1>Outlndrr</h1>
+        <p class="brand-caption">Extensions</p>
+      </div>
+    </header>
+    <main>
+      <section class="connection" aria-labelledby="connection-title">
+        <div class="connection-heading">
+          <h2 id="connection-title" class="kicker">Прокси браузера</h2>
+          <span class="led" aria-hidden="true"></span>
+        </div>
+        <div role="status" aria-live="polite" aria-atomic="true">
+          <p id="proxy-status" data-tone="pending">Загрузка…</p>
+          <p id="proxy-detail">Читаю настройки браузера.</p>
+        </div>
+      </section>
+    </main>
+    <a class="button primary" href="../settings/index.html" target="_blank" rel="noopener">
+      Открыть настройки
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7"/></svg>
+    </a>
+  </body>
+</html>

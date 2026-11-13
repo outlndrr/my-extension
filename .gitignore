@@ -1,0 +1,26 @@
+# Local dependencies and test output
+node_modules/
+coverage/
+*.log
+
+# Local configuration and private keys
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Packaged extension artifacts
+*.crx
+*.zip
+
+# Editor and operating-system files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini

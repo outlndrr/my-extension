@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru" data-theme="sage">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Настройки — Outlndrr Extensions</title>
+    <link rel="icon" href="../assets/icons/icon-32.png" type="image/png">
+    <link rel="stylesheet" href="../popup/style.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="features.js" defer></script>
+    <script src="../features/proxy/settings.js" defer></script>
+  </head>
+  <body class="settings">
+    <header>
+      <p class="brand">
+        <img class="mark" src="../assets/brand/cat.jpg" width="32" height="32" alt="">
+        Outlndrr Extensions
+      </p>
+      <h1>Настройки</h1>
+      <p class="lede">Каждая функция включается отдельно. Настройки хранятся только в этом профиле браузера.</p>
+    </header>
+    <div class="toolbar">
+      <nav aria-label="Разделы настроек"><a href="#youtube">YouTube</a><a href="#privacy">Приватность</a><a href="#proxy">Прокси</a></nav>
+      <p id="feature-status" role="status" aria-live="polite">Загрузка настроек…</p>
+    </div>
+    <main>
+      <section id="youtube" aria-labelledby="youtube-title">
+        <h2 id="youtube-title">YouTube</h2>
+        <p class="section-note">Применяется сразу, перезагружать YouTube не нужно.</p>
+        <div class="panel">
+          <label class="feature">
+            <span>
+              <strong>Улучшение трансляций в театральном режиме</strong>
+              <span id="youtube-description" class="description">
+                Плеер слева, родной чат справа на всю высоту окна, информация под видео.
+                Только текущие прямые эфиры в театральном режиме при ширине окна от 960 пикселей.
+                Обычные видео и полноэкранный режим не меняются.
+              </span>
+            </span>
+            <input id="youtube-theater" class="switch" type="checkbox" role="switch"
+                   data-setting="youtubeTheaterEnabled" aria-describedby="youtube-description" disabled>
+          </label>
+          <label class="feature">
+            <span>
+              <strong>Всегда обычный чат</strong>
+              <span id="youtube-chat-description" class="description">
+                Выбирает «Чат» вместо «Интересных сообщений» и скрывает фильтрованный режим.
+                Работает независимо от оформления, в том числе в отдельном окне чата.
+                Не меняет чат в записях завершённых трансляций.
+              </span>
+            </span>
+            <input id="youtube-full-chat" class="switch" type="checkbox" role="switch"
+                   data-setting="youtubeFullChatEnabled" aria-describedby="youtube-chat-description" disabled>
+          </label>
+        </div>
+      </section>
+
+      <section id="privacy" aria-labelledby="privacy-title">
+        <h2 id="privacy-title">Приватность</h2>
+        <p class="section-note">Действует на всех сайтах. Изменение применяется к новым и перезагруженным вкладкам.</p>
+        <div class="panel">
+          <label class="feature">
+            <span>
+              <strong>Скрывать переключение вкладок</strong>
+              <span id="visibility-description" class="description">
+                Сайты всегда видят вкладку открытой и активной и не узнают, что вы перешли
+                на другую вкладку или свернули окно. Полезно для тестов, лекций и сервисов,
+                которые ставят видео на паузу или отмечают уход со страницы.
+              </span>
+            </span>
+            <input id="page-visibility" class="switch" type="checkbox" role="switch"
+                   data-setting="pageVisibilityEnabled" aria-describedby="visibility-description" disabled>
+          </label>
+        </div>
+      </section>
+
+      <section id="proxy" aria-labelledby="proxy-title">
+        <h2 id="proxy-title">Прокси браузера</h2>
+        <p class="section-note">Один прокси для всех обычных вкладок этого профиля, включая HTTP- и HTTPS-сайты.</p>
+        <div class="panel">
+          <p id="status" role="status" aria-live="polite">Загрузка настроек прокси…</p>
+          <form id="proxy-form">
+            <fieldset id="fields" disabled>
+              <label class="field scheme">Тип
+                <select id="scheme"><option value="http">HTTP</option><option value="socks5">SOCKS5</option></select>
+              </label>
+              <label class="field host">Адрес
+                <input id="host" type="text" placeholder="proxy.example.com" required spellcheck="false" autocomplete="off">
+              </label>
+              <label class="field port">Порт
+                <input id="port" type="number" min="1" max="65535" step="1" required>
+              </label>
+              <label class="field half">Логин (необязательно)
+                <input id="username" type="text" autocomplete="off" spellcheck="false" aria-describedby="auth-note">
+              </label>
+              <label class="field half">Пароль (необязательно)
+                <input id="password" type="password" autocomplete="off" aria-describedby="auth-note">
+              </label>
+              <p id="auth-note" class="description">
+                Логин и пароль доступны только для HTTP. SOCKS5 в Chromium работает без авторизации.
+                Для HTTP с авторизацией оставьте только логин, если пароль пустой.
+                Пароль сохраняется локально в профиле без шифрования и синхронизации.
+              </p>
+              <div class="buttons">
+                <button type="submit">Сохранить и включить</button>
+                <button id="disable" type="button">Отключить</button>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+        <details class="notes">
+          <summary>Что важно знать о прокси</summary>
+          <p>
+            При отключении возвращается прежнее управление прокси.
+            Недоступный прокси может остановить загрузку сайтов — тогда нажмите «Отключить».
+            Это не VPN: localhost, WebRTC/UDP и часть служебного трафика могут идти напрямую.
+            Для авторизации в инкогнито разрешите расширению работу в этом режиме.
+          </p>
+          <p>
+            При открытии popup включённый прокси проверяется одним HTTPS-запросом к example.com.
+            Запрос отправляется без cookies и не содержит сохранённых настроек.
+            Проверка не выполняется в фоне и не гарантирует анонимность или доступность всех сайтов.
+          </p>
+        </details>
+      </section>
+    </main>
+  </body>
+</html>

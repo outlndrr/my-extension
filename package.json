@@ -1,0 +1,12 @@
+{
+  "name": "outlndrr-extensions",
+  "version": "0.3.0",
+  "private": true,
+  "description": "A dependency-free Chromium extension for proxy settings, YouTube live streams, and page visibility.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

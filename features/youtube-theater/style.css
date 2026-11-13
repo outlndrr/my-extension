@@ -1,0 +1,102 @@
+ytd-watch-flexy[data-oe-youtube-theater] {
+  --oe-youtube-chat-width: 0px;
+  --oe-youtube-stage-height: calc(100dvh - var(--oe-youtube-header-height, 56px));
+}
+
+ytd-watch-flexy[data-oe-youtube-theater="expanded"] {
+  --oe-youtube-chat-width: 400px;
+}
+
+ytd-watch-flexy[data-oe-youtube-theater] #full-bleed-container {
+  width: calc(100% - var(--oe-youtube-chat-width)) !important;
+  height: var(--oe-youtube-stage-height) !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  background: #000;
+}
+
+ytd-watch-flexy[data-oe-youtube-theater] #player-full-bleed-container,
+ytd-watch-flexy[data-oe-youtube-theater] #player-theater-container,
+ytd-watch-flexy[data-oe-youtube-theater] #player-container-outer,
+ytd-watch-flexy[data-oe-youtube-theater] #player-container {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex: none !important;
+}
+
+ytd-watch-flexy[data-oe-youtube-theater] #player-container-inner {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+}
+
+ytd-watch-flexy[data-oe-youtube-theater] #movie_player {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Native video dimensions must stay intact: its relative container has zero height. */
+
+ytd-watch-flexy[data-oe-youtube-theater] #columns {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: calc(100% - var(--oe-youtube-chat-width)) !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 24px !important;
+}
+
+ytd-watch-flexy[data-oe-youtube-theater] #primary {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+ytd-watch-flexy[data-oe-youtube-theater] #secondary {
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+ytd-watch-flexy[data-oe-youtube-theater] #related {
+  display: none !important;
+}
+
+/* Keep the iframe in its native DOM position so playback and chat aren't reloaded. */
+ytd-watch-flexy[data-oe-youtube-theater] ytd-live-chat-frame#chat:not([hidden]) {
+  position: fixed !important;
+  top: var(--oe-youtube-header-height, 56px) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 2000;
+  box-sizing: border-box !important;
+  width: var(--oe-youtube-chat-width) !important;
+  height: var(--oe-youtube-stage-height) !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  border-left: 1px solid var(--yt-spec-10-percent-layer, #333) !important;
+  background: var(--yt-spec-base-background, #0f0f0f);
+}
+
+ytd-watch-flexy[data-oe-youtube-theater="collapsed"] ytd-live-chat-frame#chat:not([hidden]) {
+  top: calc(var(--oe-youtube-header-height, 56px) + 8px) !important;
+  right: 8px !important;
+  bottom: auto !important;
+  width: 160px !important;
+  height: auto !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+}
