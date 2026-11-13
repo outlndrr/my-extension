@@ -15,22 +15,38 @@
         <h1>Outlndrr</h1>
         <p class="brand-caption">Extensions</p>
       </div>
+      <a class="button settings-button" href="../settings/index.html" target="_blank" rel="noopener" aria-label="Открыть настройки" title="Настройки">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 3h4l.6 2.3 1.9 1.1 2.3-.6 2 3.4-1.7 1.7v2.2l1.7 1.7-2 3.4-2.3-.6-1.9 1.1L14 21h-4l-.6-2.3-1.9-1.1-2.3.6-2-3.4 1.7-1.7v-2.2L3.2 9.2l2-3.4 2.3.6 1.9-1.1Z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </a>
     </header>
     <main>
-      <section class="connection" aria-labelledby="connection-title">
-        <div class="connection-heading">
-          <h2 id="connection-title" class="kicker">Прокси браузера</h2>
-          <span class="led" aria-hidden="true"></span>
+      <section class="connection" aria-label="Прокси">
+        <div class="connection-heading" role="status" aria-live="polite" aria-atomic="true">
+          <span class="proxy-label">Статус прокси</span>
+          <span id="proxy-status" class="status-label" data-tone="pending">Загрузка…</span>
         </div>
-        <div role="status" aria-live="polite" aria-atomic="true">
-          <p id="proxy-status" data-tone="pending">Загрузка…</p>
-          <p id="proxy-detail">Читаю настройки браузера.</p>
+        <div id="proxy-server" class="proxy-server" hidden>
+          <div class="proxy-address-row">
+            <span id="proxy-address" class="proxy-address"></span>
+            <button id="copy-proxy" class="copy-button" type="button" aria-label="Скопировать адрес прокси" title="Скопировать адрес" disabled>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="8" y="8" width="12" height="12" rx="2"/>
+                <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </button>
+          </div>
+          <p id="proxy-meta" class="proxy-meta"></p>
         </div>
+        <p id="proxy-detail" class="proxy-detail" role="status" aria-live="polite" hidden></p>
+        <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
       </section>
+      <div class="feature-summary" role="status" aria-live="polite" aria-atomic="true">
+        <span>Включено функций</span>
+        <span id="feature-count" class="feature-count">…</span>
+      </div>
     </main>
-    <a class="button primary" href="../settings/index.html" target="_blank" rel="noopener">
-      Открыть настройки
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7"/></svg>
-    </a>
   </body>
 </html>

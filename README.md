@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icons/icon-128.png" width="80" height="80" alt="Outlndrr Extensions icon">
+</p>
+
 # Outlndrr Extensions
 
 A lightweight browser extension for **Helium and other Chromium-based browsers**. It combines profile-wide proxy settings, a better YouTube live-stream layout, unfiltered live chat, and control over page-visibility signals in one extension.
@@ -15,9 +19,9 @@ Each feature is independent and can be configured on the shared settings page.
 | Browser proxy | Applies an HTTP or SOCKS5 proxy to the current browser profile, with optional HTTP authentication. | Off until configured |
 | YouTube live theater | Places the live player on the left and native chat on the right, with video details below. | On |
 | Always use Live chat | Selects Live chat instead of Top chat and hides the filtered option. | On |
-| Hide tab switches | Overrides page visibility and focus signals exposed to websites. | On |
+| Disable Page Visibility | Overrides page visibility and focus signals exposed to websites. | On |
 
-The toolbar popup stays small: proxy status, a short explanation, and a link to settings. It does not duplicate the feature switches or read saved proxy credentials.
+The toolbar popup shows proxy status, its server address and type, a copy-address button, and the number of enabled feature switches. A settings gear in the header opens the full settings page. The popup does not duplicate the switches or read saved proxy credentials.
 
 The popup and settings use a Neko-inspired, dark-only design with sage accents, locally bundled Golos Text fonts, and the original cat photo as the extension icon. No UI assets are fetched from a CDN.
 
@@ -32,7 +36,7 @@ Requires a Chromium-based browser with support for **Chromium 123 or newer**. Th
 5. Refresh any open YouTube pages and other pages where you want the visibility feature to take effect.
 6. Optionally pin the extension to the toolbar.
 
-Open the toolbar popup and follow the settings link to configure features. You can also open the extension's options from the extensions page.
+Open the toolbar popup and click the settings gear in the header to configure features. You can also open the extension's options from the extensions page.
 
 After updating the source files, reload the extension on the extensions page and refresh affected tabs. No compilation is needed.
 
@@ -48,16 +52,13 @@ In settings, choose **HTTP** or **SOCKS5**, enter a host and port, and use **Sav
 - **Disable** removes this extension's proxy override but keeps the saved form. The previous system, command-line, or extension configuration takes over; this does not necessarily mean a direct connection.
 - Browser policies or another extension may prevent proxy control. The settings page reports the conflict.
 
-### Connection check
+### Browser proxy status
 
-When this extension controls an enabled proxy, opening the popup makes one `HEAD` request to `https://example.com/` with an eight-second timeout:
+The popup reads the browser's effective proxy settings and displays `Статус прокси` beside a colored label: `Подключено` (connected) or `Отключено` (disconnected). An active proxy shows its protocol and a blurred host and port. The address stays blurred on hover, and tooltips do not reveal it. The copy button copies only `host:port`, with brackets around IPv6 addresses, and reports success or failure. Inactive, externally controlled, and unreadable settings show their explanation in the card. The status updates while the popup is open if proxy settings change.
 
-- No cookies, cache, referrer, or redirects are used.
-- Saved proxy settings and credentials are not included in the request to the test site. Proxy authentication, if needed, is handled separately.
-- There is no background polling and no check when the proxy is disabled or controlled elsewhere.
-- Proxy settings are read again after the request so a changed configuration cannot produce a stale success message.
+Below the proxy card, `Включено функций` shows how many of the three feature switches are enabled: YouTube theater, full chat, and page visibility. Proxy status is shown separately. Unset switches use their enabled defaults; changes update the count immediately. Hover over the count to see the enabled features. If preferences cannot be read, the popup shows an unavailable count while keeping proxy status independent.
 
-A successful check means the test site responded successfully under the active proxy configuration. It does **not** verify your external IP, anonymity, absence of leaks, or access to every website. A failed check may indicate a proxy, network, or test-site problem. The test site receives ordinary network metadata, including the exit IP address.
+Opening the popup sends no diagnostic network requests and does not read saved proxy credentials. The status reports the browser's active configuration; it does not test server availability or authentication. Disabled, externally controlled, and unreadable settings have separate states.
 
 ### Security and limitations
 
@@ -72,6 +73,8 @@ A successful check means the test site responded successfully under the active p
 ## YouTube live theater
 
 Open an **ongoing live stream** on `www.youtube.com` and enable YouTube's native **Theater mode** using the player button or `T` when focus is not in an input field.
+
+![YouTube live theater example with the live player on the left and chat on the right](assets/screenshots/youtube-live-theater.png)
 
 - The player fills the available height below YouTube's header while preserving the video's aspect ratio.
 - Native live chat occupies a 400-pixel column on the right and remains visible while scrolling.
@@ -96,7 +99,7 @@ This switch is separate from the theater layout:
 
 The YouTube features do not read chat messages or send chat data anywhere. They depend on YouTube's DOM and player APIs, so site experiments, markup changes, or other player extensions may require compatibility updates.
 
-## Hide tab switches
+## Disable Page Visibility
 
 When enabled, a script runs in the page's MAIN world at `document_start` in matching frames, wherever the browser allows extension injection:
 
@@ -119,7 +122,7 @@ This does not stop background timer or `requestAnimationFrame` throttling. A sit
 | `webRequestAuthProvider` | Responds to HTTP proxy authentication challenges. |
 | `<all_urls>` | Allows proxy authentication for requests to any site and visibility-script injection on supported pages. |
 
-Feature preferences and proxy settings stay in the local browser profile rather than sync storage. The extension does not collect browsing history, record page contents, or include analytics. The explicit outbound diagnostic request is the popup's connection check described above.
+Feature preferences and proxy settings stay in the local browser profile rather than sync storage. The extension does not collect browsing history, record page contents, or include analytics. The popup reads proxy settings locally and sends no diagnostic network requests.
 
 YouTube content scripts run only on `https://www.youtube.com/*`; the chat feature also runs inside live-chat frames. The visibility script is registered across supported sites only while its feature is enabled.
 
@@ -137,7 +140,7 @@ Tests use Node's built-in `node:test` and `node:assert/strict`. Run a single fil
 node --test tests/proxy.test.cjs
 ```
 
-The suite covers proxy validation and authentication, settings persistence and failures, popup request behavior and stale-result protection, YouTube state transitions, page-visibility overrides, and bundled UI assets. Browser APIs and page structures are mocked; passing tests do not replace checks against a real proxy or live YouTube page.
+The suite covers proxy validation and authentication, settings persistence and failures, popup status updates without network requests, copying proxy addresses, live feature counts and stale-result protection, YouTube state transitions, page-visibility overrides, and bundled UI assets. Browser APIs and page structures are mocked; passing tests do not replace checks against a real proxy or live YouTube page.
 
 ### Browser smoke checks
 
@@ -145,11 +148,11 @@ Load the repository as an unpacked extension, then check:
 
 1. **Popup and settings:** open settings from the popup, toggle features, reopen the page, and verify persistence. Check keyboard navigation, narrow layouts, dark styling under a light OS theme, and reduced motion.
 2. **Proxy:** test HTTP with and without authentication and SOCKS5 without authentication. Verify HTTP/HTTPS browsing and the external IP using a real server. SOCKS5 credentials must be rejected; website authentication must never receive proxy credentials.
-3. **Proxy failures:** try a wrong password and an unreachable server. Check that retries stop, the popup does not claim success, and disabling restores the previous proxy configuration. Also check conflicting proxy control and persistence after restart; test incognito separately if used.
-4. **Connection check:** verify no probe when the proxy is off or externally controlled. Change proxy settings during a pending probe and confirm the popup cannot display stale success.
+3. **Proxy failures:** try a wrong password and an unreachable server. Check that retries stop and disabling restores the previous proxy configuration. The popup reports the active browser configuration even when the server is unreachable. Also check conflicting proxy control and persistence after restart; test incognito separately if used.
+4. **Browser proxy status:** verify that opening the popup sends no diagnostic request in any state. Enable, change, and disable the proxy with the popup open; confirm the label, address, and type update, and conflicting proxy control is reported separately. Copy HTTP/SOCKS5 and IPv6 addresses, and check feedback when clipboard access is denied. Change feature switches and verify the enabled count updates independently of the proxy.
 5. **YouTube theater:** use an ongoing stream, hide/show chat, toggle the feature, switch viewing modes, navigate between videos without reloading, and test a narrow window, a stream without chat, and both YouTube themes.
 6. **Live chat:** check that only Live chat is offered while enabled, both choices return when disabled, a pop-out chat works, and chat replays stay unchanged.
-7. **Visibility:** inspect `document.hidden`, `document.visibilityState`, and visibility events while switching tabs. Disable the feature, reload the page, and confirm normal behavior returns.
+7. **Disable Page Visibility:** inspect `document.hidden`, `document.visibilityState`, and visibility events while switching tabs. Disable the feature, reload the page, and confirm normal behavior returns.
 
 ### Repository layout
 

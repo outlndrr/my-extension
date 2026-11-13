@@ -1,10 +1,32 @@
 const proxyStatus = document.getElementById("proxy-status");
+const proxyServer = document.getElementById("proxy-server");
+const proxyAddress = document.getElementById("proxy-address");
+const proxyMeta = document.getElementById("proxy-meta");
 const proxyDetail = document.getElementById("proxy-detail");
+const copyProxy = document.getElementById("copy-proxy");
+const copyStatus = document.getElementById("copy-status");
+const featureCount = document.getElementById("feature-count");
+const featureNames = {
+  youtubeTheaterEnabled: "Театральный режим YouTube",
+  youtubeFullChatEnabled: "Обычный чат YouTube",
+  pageVisibilityEnabled: "Disable Page Visibility",
+};
+const featureDefaults = Object.fromEntries(Object.keys(featureNames).map((key) => [key, true]));
+let proxyReadId = 0;
+let featureReadId = 0;
 
 function showProxy(message, detail, tone) {
   proxyStatus.textContent = message;
   proxyStatus.dataset.tone = tone;
+  proxyStatus.title = detail;
+  proxyServer.hidden = true;
+  proxyAddress.textContent = "";
+  proxyMeta.textContent = "";
+  copyProxy.disabled = true;
+  copyStatus.textContent = "";
   proxyDetail.textContent = detail;
+  proxyDetail.hidden = false;
+  proxyDetail.dataset.tone = tone;
 }
 
 function proxyEnabled(effective) {
@@ -14,51 +36,78 @@ function proxyEnabled(effective) {
 
 function showInactiveProxy(effective) {
   if (["not_controllable", "controlled_by_other_extensions"].includes(effective.levelOfControl)) {
-    showProxy("Управляется вне расширения", "Прокси задан браузером или другим расширением. Соединение не проверялось.", "warn");
+    showProxy("Внешнее управление", "Настройки прокси заданы браузером или другим расширением.", "warn");
   } else {
-    showProxy("Отключён в расширении", "Действуют настройки браузера или системы.", "off");
+    showProxy("Отключено", "Действуют настройки браузера или системы.", "off");
   }
 }
 
 async function loadProxy() {
-  let before;
+  const readId = ++proxyReadId;
   try {
-    before = await chrome.proxy.settings.get({ incognito: false });
+    const effective = await chrome.proxy.settings.get({ incognito: false });
+    if (readId !== proxyReadId) return;
+    if (!proxyEnabled(effective)) {
+      showInactiveProxy(effective);
+      return;
+    }
+    const server = effective.value.rules.singleProxy;
+    const host = server.host.includes(":") && !server.host.startsWith("[")
+      ? `[${server.host}]` : server.host;
+    const address = `${host}:${server.port}`;
+    const scheme = server.scheme.toUpperCase();
+    showProxy("Подключено", "Прокси включён в браузере.", "ok");
+    proxyAddress.textContent = address;
+    proxyMeta.textContent = scheme;
+    proxyServer.hidden = false;
+    proxyDetail.hidden = true;
+    copyProxy.disabled = false;
   } catch {
-    showProxy("Состояние неизвестно", "Не удалось прочитать настройки прокси. Откройте меню ещё раз.", "error");
-    return;
-  }
-  if (!proxyEnabled(before)) {
-    showInactiveProxy(before);
-    return;
-  }
-  showProxy("Проверка соединения…", "Один HTTPS-запрос к example.com. Ожидание до 8 секунд.", "pending");
-  let connected = false;
-  try {
-    const response = await fetch("https://example.com/", {
-      method: "HEAD", cache: "no-store", credentials: "omit", redirect: "error",
-      referrerPolicy: "no-referrer", signal: AbortSignal.timeout(8000),
-    });
-    connected = response.ok;
-  } catch {
-    // A failed probe can mean an unavailable proxy, Internet connection, or test site.
-  }
-  let after;
-  try {
-    after = await chrome.proxy.settings.get({ incognito: false });
-  } catch {
-    showProxy("Состояние неизвестно", "Не удалось подтвердить настройки после проверки.", "error");
-    return;
-  }
-  if (!proxyEnabled(after)) {
-    showInactiveProxy(after);
-  } else if (JSON.stringify(before.value) !== JSON.stringify(after.value)) {
-    showProxy("Настройки изменились", "Откройте меню ещё раз для проверки нового прокси.", "warn");
-  } else if (connected) {
-    showProxy("Соединение работает", "example.com доступен через включённый прокси. Это не проверка анонимности.", "ok");
-  } else {
-    showProxy("Соединение не подтверждено", "Прокси включён. Причина может быть в нём, сети или example.com.", "error");
+    if (readId !== proxyReadId) return;
+    showProxy("Неизвестно", "Не удалось прочитать настройки прокси. Откройте меню ещё раз.", "error");
   }
 }
 
+copyProxy.addEventListener("click", async () => {
+  if (copyProxy.disabled || proxyServer.hidden) return;
+  const readId = proxyReadId;
+  const address = proxyAddress.textContent;
+  copyProxy.disabled = true;
+  copyStatus.textContent = "";
+  try {
+    await navigator.clipboard.writeText(address);
+    if (readId !== proxyReadId) return;
+    copyStatus.textContent = "Адрес скопирован";
+    copyStatus.dataset.tone = "ok";
+  } catch {
+    if (readId !== proxyReadId) return;
+    copyStatus.textContent = "Не удалось скопировать. Выделите адрес и скопируйте вручную.";
+    copyStatus.dataset.tone = "error";
+  } finally {
+    if (readId === proxyReadId) copyProxy.disabled = false;
+  }
+});
+
+async function loadFeatures() {
+  const readId = ++featureReadId;
+  try {
+    const settings = await chrome.storage.local.get(featureDefaults);
+    if (readId !== featureReadId) return;
+    const enabled = Object.keys(featureNames).filter((key) => settings[key] !== false);
+    featureCount.textContent = `${enabled.length} из ${Object.keys(featureNames).length}`;
+    featureCount.title = enabled.length ? enabled.map((key) => featureNames[key]).join(", ") : "Все функции отключены";
+    featureCount.dataset.tone = enabled.length ? "ok" : "off";
+  } catch {
+    if (readId !== featureReadId) return;
+    featureCount.textContent = "Недоступно";
+    featureCount.title = "Не удалось прочитать настройки функций.";
+    featureCount.dataset.tone = "error";
+  }
+}
+
+chrome.proxy.settings.onChange.addListener(loadProxy);
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && Object.keys(featureNames).some((key) => Object.hasOwn(changes, key))) loadFeatures();
+});
 loadProxy();
+loadFeatures();
