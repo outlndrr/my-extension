@@ -1,0 +1,35 @@
+[
+  {
+    "id": "webgpu-nomos-medium",
+    "name": "NomosUni Compact — Medium",
+    "file": "nomos-medium.bin",
+    "author": "Philip Hofmann (Helaman / Phhofm)",
+    "license": "CC-BY-4.0",
+    "source": "https://github.com/Phhofm/models/releases/tag/2xNomosUni_compact_otf_medium",
+    "releaseCommit": "5f0ac0027e98ea39fab1b4113e522266f8400ea4",
+    "sourceOnnx": {
+      "file": "2xNomosUni_compact_otf_medium_fp32_opset17.onnx",
+      "url": "https://github.com/Phhofm/models/releases/download/2xNomosUni_compact_otf_medium/2xNomosUni_compact_otf_medium_fp32_opset17.onnx",
+      "bytes": 2412381,
+      "sha256": "69c5d780acf2fa5814ef6eaa76822ab8c5439641d21f2c80be16c0ff5e9c1992"
+    },
+    "note": "По описанию автора: универсальная модель для JPEG-сжатия, некоторого шума и размытия. Качество и скорость в браузере зависят от видео и GPU."
+  },
+  {
+    "id": "webgpu-nomos-multijpg",
+    "name": "NomosUni Compact — MultiJPG",
+    "file": "nomos-multijpg.bin",
+    "author": "Philip Hofmann (Helaman / Phhofm)",
+    "license": "CC-BY-4.0",
+    "source": "https://github.com/Phhofm/models/releases/tag/2xNomosUni_compact_multijpg",
+    "modelCard": "https://huggingface.co/Phips/2xNomosUni_compact_multijpg",
+    "releaseCommit": "5f0ac0027e98ea39fab1b4113e522266f8400ea4",
+    "sourceOnnx": {
+      "file": "2xNomosUni_compact_multijpg_fp32_opset17.onnx",
+      "url": "https://github.com/Phhofm/models/releases/download/2xNomosUni_compact_multijpg/2xNomosUni_compact_multijpg_fp32_opset17.onnx",
+      "bytes": 2412381,
+      "sha256": "cee03eb5411dab817dc7d48e5221813910994af4fd16fd39d3b3ec22b2cf9177"
+    },
+    "note": "По описанию автора: парное обучение на JPEG-сжатии до качества 40 и нескольких способах масштабирования. Качество и скорость в браузере зависят от видео и GPU."
+  }
+]

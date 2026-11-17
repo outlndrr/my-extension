@@ -16,7 +16,7 @@ test("manifest uses matching, correctly sized PNG icons for the app and toolbar"
   }
 });
 
-test("both pages use the sage design and local assets with no missing references", () => {
+test("extension pages use the sage design and local assets with no missing references", () => {
   for (const file of ["popup/index.html", "settings/index.html"]) {
     const html = readFileSync(file, "utf8");
     assert.match(html, /<html lang="ru" data-theme="sage">/);

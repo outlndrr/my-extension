@@ -7,6 +7,7 @@
     <link rel="icon" href="../assets/icons/icon-32.png" type="image/png">
     <link rel="stylesheet" href="style.css">
     <script src="popup.js" defer></script>
+    <script src="video-upscale.js" defer></script>
   </head>
   <body class="popup">
     <header class="brand">
@@ -23,30 +24,24 @@
       </a>
     </header>
     <main>
-      <section class="connection" aria-label="Прокси">
-        <div class="connection-heading" role="status" aria-live="polite" aria-atomic="true">
+      <section class="panel" aria-label="Прокси">
+        <div class="panel-heading" role="status" aria-live="polite" aria-atomic="true">
           <span class="proxy-label">Статус прокси</span>
           <span id="proxy-status" class="status-label" data-tone="pending">Загрузка…</span>
         </div>
-        <div id="proxy-server" class="proxy-server" hidden>
-          <div class="proxy-address-row">
-            <span id="proxy-address" class="proxy-address"></span>
-            <button id="copy-proxy" class="copy-button" type="button" aria-label="Скопировать адрес прокси" title="Скопировать адрес" disabled>
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="8" y="8" width="12" height="12" rx="2"/>
-                <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>
-              </svg>
-            </button>
-          </div>
-          <p id="proxy-meta" class="proxy-meta"></p>
-        </div>
-        <p id="proxy-detail" class="proxy-detail" role="status" aria-live="polite" hidden></p>
-        <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
       </section>
-      <div class="feature-summary" role="status" aria-live="polite" aria-atomic="true">
-        <span>Включено функций</span>
-        <span id="feature-count" class="feature-count">…</span>
-      </div>
+      <section class="panel upscale" aria-labelledby="upscale-heading">
+        <label class="upscale-heading" for="upscale-enabled">
+          <span><strong id="upscale-heading">Апскейл видео ×2</strong> <span class="badge" data-tone="warn">Эксперимент</span><small>WebGPU, на текущей вкладке</small></span>
+          <input id="upscale-enabled" class="switch" type="checkbox" role="switch" aria-describedby="upscale-state" disabled>
+        </label>
+        <label class="upscale-field" for="upscale-model">Модель</label>
+        <select id="upscale-model" disabled>
+          <option value="webgpu-fast">WebGPU Fast — 8 каналов</option>
+          <option value="webgpu-quality">WebGPU Quality — 16 каналов</option>
+        </select>
+        <p id="upscale-state" role="status" aria-live="polite" aria-atomic="true">Проверка текущей вкладки…</p>
+      </section>
     </main>
   </body>
 </html>
