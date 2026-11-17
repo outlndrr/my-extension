@@ -12,6 +12,9 @@
     "webRequestAuthProvider"
   ],
   "host_permissions": ["<all_urls>"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -35,6 +38,14 @@
       "128": "assets/icons/icon-128.png"
     }
   },
+  "web_accessible_resources": [
+    {
+      "resources": ["features/video-upscale/webgpu-client.mjs",
+        "features/video-upscale/wasm/pkg/*.js", "features/video-upscale/wasm/pkg/*.wasm",
+        "features/video-upscale/webgpu-models/catalogue.json", "features/video-upscale/webgpu-models/*.bin"],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ],
   "content_scripts": [
     {
       "matches": [

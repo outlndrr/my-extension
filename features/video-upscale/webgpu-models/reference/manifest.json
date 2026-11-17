@@ -1,0 +1,57 @@
+{
+  "torch": "2.11.0+cpu",
+  "numpy": "2.1.3",
+  "padding": "clamp-to-edge",
+  "sourceResampling": "Catmull-Rom bicubic (a=-0.5), pinned WebSR DisplayLayer3C",
+  "resamplingTest": "independent separable quarter coefficients vs upstream 4x4 polynomial; RGB edges, overshoot, constants",
+  "fixtures": [
+    {
+      "model": "webgpu-fast",
+      "width": 32,
+      "height": 24,
+      "input": "input-32x24.rgba",
+      "expected": "webgpu-fast-32x24.rgba",
+      "floatRgb": "webgpu-fast-32x24.f32",
+      "sha256": "6099d8d7668c934f6005f540633c3e0177205b99205d995dd6302305a830297e",
+      "numpyTorchMaxAbs": 2.980232238769531e-07,
+      "stageMaxAbs": 1.3709068298339844e-06,
+      "gpuToleranceUint8": 2
+    },
+    {
+      "model": "webgpu-quality",
+      "width": 32,
+      "height": 24,
+      "input": "input-32x24.rgba",
+      "expected": "webgpu-quality-32x24.rgba",
+      "floatRgb": "webgpu-quality-32x24.f32",
+      "sha256": "b480d79dc779893a232b2696f697618c82fc8d118bf58b06901caf3395413fd2",
+      "numpyTorchMaxAbs": 2.980232238769531e-07,
+      "stageMaxAbs": 2.384185791015625e-06,
+      "gpuToleranceUint8": 2
+    },
+    {
+      "model": "webgpu-fast",
+      "width": 17,
+      "height": 13,
+      "input": "input-17x13.rgba",
+      "expected": "webgpu-fast-17x13.rgba",
+      "floatRgb": "webgpu-fast-17x13.f32",
+      "sha256": "3ea61a58d44a44f0a2df1a8f7b650b8a6ba243ca03cb096f57511242d127de16",
+      "numpyTorchMaxAbs": 2.384185791015625e-07,
+      "stageMaxAbs": 1.2516975402832031e-06,
+      "gpuToleranceUint8": 2
+    },
+    {
+      "model": "webgpu-quality",
+      "width": 17,
+      "height": 13,
+      "input": "input-17x13.rgba",
+      "expected": "webgpu-quality-17x13.rgba",
+      "floatRgb": "webgpu-quality-17x13.f32",
+      "sha256": "3611d525d158e9764864872327e480d910971501d205d5cb7f1a6dfa1e12dddd",
+      "numpyTorchMaxAbs": 2.980232238769531e-07,
+      "stageMaxAbs": 2.384185791015625e-06,
+      "gpuToleranceUint8": 2
+    }
+  ]
+}

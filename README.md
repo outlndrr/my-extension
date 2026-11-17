@@ -6,13 +6,13 @@
 
 A lightweight browser extension for **Helium and other Chromium-based browsers**. It combines profile-wide proxy settings, a better YouTube live-stream layout, unfiltered live chat, and control over page-visibility signals in one extension.
 
-Built with Manifest V3, plain JavaScript, and CSS. **No build step, package installation, or runtime dependencies.**
+Built with Manifest V3, plain JavaScript, and CSS. **Loading the extension needs no build step or package installation.** The experimental video upscaler includes a compiled Rust/WASM module, WebGPU shaders and trained models. Editing the browser Rust engine requires [rebuilding its WASM module](features/video-upscale/wasm/README.md). Other features remain dependency-free.
 
 > The extension interface is currently in Russian. This README uses English descriptions of its controls.
 
 ## Features
 
-Each feature is independent and can be configured on the shared settings page.
+Each feature is independent. Persistent switches live in settings; the experimental upscaler starts manually from the toolbar popup.
 
 | Feature | What it does | Default |
 | --- | --- | --- |
@@ -20,10 +20,51 @@ Each feature is independent and can be configured on the shared settings page.
 | YouTube live theater | Places the live player on the left and native chat on the right, with video details below. | On |
 | Always use Live chat | Selects Live chat instead of Top chat and hides the filtered option. | On |
 | Disable Page Visibility | Overrides page visibility and focus signals exposed to websites. | On |
+| Video upscale (experimental) | Draws WebGPU-enhanced frames over the site's video, preserving its controls. | Manual, from the popup |
 
-The toolbar popup shows proxy status, its server address and type, a copy-address button, and the number of enabled feature switches. A settings gear in the header opens the full settings page. The popup does not duplicate the switches or read saved proxy credentials.
+The toolbar popup shows the proxy connection status (without the server address) and a separate panel for the experimental video upscaler with model selection. A settings gear in the header opens the full settings page. The popup does not read saved proxy credentials.
 
 The popup and settings use a Neko-inspired, dark-only design with sage accents, locally bundled Golos Text fonts, and the original cat photo as the extension icon. No UI assets are fetched from a CDN.
+
+## Video upscale (experimental)
+
+Processing runs entirely in the browser:
+Rust/WASM manages GPU resources and trained CNN passes through the browser's
+WebGPU API. A decoded `VideoFrame` is imported as an external GPU texture,
+processed at the original resolution and drawn at ×2 on a canvas over the
+site's video. Frames do not travel through HTTP, CPU RGBA arrays or a second
+video encoder. One frame is processed at a time, with room for one waiting
+VideoFrame. A newer frame replaces the waiting one; completion immediately
+starts that latest frame. This absorbs scheduling jitter without allowing a
+slow model to grow an unlimited queue. Seek/stop closes the waiting frame.
+
+1. Reload the unpacked extension and refresh an HTTPS video page. Hardware
+   acceleration and WebGPU must be available in the browser.
+2. Open the popup, choose **WebGPU Fast** (8 channels) or **WebGPU Quality**
+   (16 channels), and turn on upscaling.
+   No local service is needed. Models and code are bundled.
+3. The largest visible video is selected. The original player keeps its source,
+   audio, playback position and controls. Turning the switch off removes the
+   enhancement and releases the GPU resources. Disable it before changing models.
+
+Fast and Quality are trained WebSR ×2 CNNs; the names describe their size,
+not a measured quality ranking on every video. Compare fine texture, faces and motion with the switch before
+choosing a model. See [model provenance, licenses and numerical references](features/video-upscale/webgpu-models/README.md).
+During playback, results that arrive too late are rejected and the popup explains
+why the original is shown. There is no intentional presentation buffer; actual picture
+delay depends on GPU processing and browser scheduling. The original audio is
+not delayed, and the popup reports source/display FPS and total frame latency,
+including any wait in the latest-frame slot.
+See [browser measurements and verification](features/video-upscale/wasm/BENCHMARKS.md).
+
+**On websites:** readable video frames, including non-DRM Blob and MediaSource
+players, are supported up to 2,073,600 input pixels. The site continues to fetch
+and decode its own media, so no source URL or cookies need to be copied.
+CORS-tainted canvases and protected video are rejected. The canvas ignores
+pointer events; seeking invalidates old frames, and source changes resume capture.
+Native video controls, native subtitles, native video fullscreen and Picture-in-Picture use the
+original image where an external canvas cannot preserve their presentation.
+Custom controls above the video and fullscreen player containers can retain the overlay.
 
 ## Installation
 
@@ -38,7 +79,7 @@ Requires a Chromium-based browser with support for **Chromium 123 or newer**. Th
 
 Open the toolbar popup and click the settings gear in the header to configure features. You can also open the extension's options from the extensions page.
 
-After updating the source files, reload the extension on the extensions page and refresh affected tabs. No compilation is needed.
+After updating JavaScript, CSS or the bundled release files, reload the extension on the extensions page and refresh affected tabs. Changes to the Rust engine require rebuilding its WASM module first.
 
 ## Browser proxy
 
@@ -54,9 +95,7 @@ In settings, choose **HTTP** or **SOCKS5**, enter a host and port, and use **Sav
 
 ### Browser proxy status
 
-The popup reads the browser's effective proxy settings and displays `Статус прокси` beside a colored label: `Подключено` (connected) or `Отключено` (disconnected). An active proxy shows its protocol and a blurred host and port. The address stays blurred on hover, and tooltips do not reveal it. The copy button copies only `host:port`, with brackets around IPv6 addresses, and reports success or failure. Inactive, externally controlled, and unreadable settings show their explanation in the card. The status updates while the popup is open if proxy settings change.
-
-Below the proxy card, `Включено функций` shows how many of the three feature switches are enabled: YouTube theater, full chat, and page visibility. Proxy status is shown separately. Unset switches use their enabled defaults; changes update the count immediately. Hover over the count to see the enabled features. If preferences cannot be read, the popup shows an unavailable count while keeping proxy status independent.
+The popup reads the browser's effective proxy settings and displays `Статус прокси` beside a colored label: `Подключено` (connected), `Отключено` (disconnected), `Внешнее управление` (controlled by the browser or another extension) or `Неизвестно` (unreadable). The server address is never shown; hover over the label for an explanation. The status updates while the popup is open if proxy settings change.
 
 Opening the popup sends no diagnostic network requests and does not read saved proxy credentials. The status reports the browser's active configuration; it does not test server availability or authentication. Disabled, externally controlled, and unreadable settings have separate states.
 
@@ -117,12 +156,15 @@ This does not stop background timer or `requestAnimationFrame` throttling. A sit
 | --- | --- |
 | `storage` | Stores local feature preferences and proxy settings; session storage tracks proxy authentication attempts. |
 | `proxy` | Reads, applies, and clears the profile's proxy configuration. |
-| `scripting` | Registers or unregisters the page-visibility script when its switch changes. |
+| `scripting` | Registers page-visibility scripts and, on explicit user action, discovers/captures videos in the selected tab. |
 | `webRequest` | Observes proxy authentication and request completion/failure to clean up retry tracking. |
 | `webRequestAuthProvider` | Responds to HTTP proxy authentication challenges. |
-| `<all_urls>` | Allows proxy authentication for requests to any site and visibility-script injection on supported pages. |
+| `<all_urls>` | Allows proxy authentication, visibility-script injection, and manually requested video capture on supported pages. |
 
-Feature preferences and proxy settings stay in the local browser profile rather than sync storage. The extension does not collect browsing history, record page contents, or include analytics. The popup reads proxy settings locally and sends no diagnostic network requests.
+Feature preferences and proxy settings stay in the local browser profile rather than sync storage. The extension does not collect browsing history or include analytics. The upscaler reads video frames only when enabled by the user. Processing stays in the browser through WebGPU. The extension CSP permits its bundled WebAssembly module with `wasm-unsafe-eval`; it does not permit arbitrary JavaScript eval or remotely hosted executable code.
+
+The upscaler's web-accessible resources are limited to its WebGPU client, WASM
+engine and model files; nothing is injected until the upscaler is started from the popup.
 
 YouTube content scripts run only on `https://www.youtube.com/*`; the chat feature also runs inside live-chat frames. The visibility script is registered across supported sites only while its feature is enabled.
 
@@ -140,7 +182,7 @@ Tests use Node's built-in `node:test` and `node:assert/strict`. Run a single fil
 node --test tests/proxy.test.cjs
 ```
 
-The suite covers proxy validation and authentication, settings persistence and failures, popup status updates without network requests, copying proxy addresses, live feature counts and stale-result protection, YouTube state transitions, page-visibility overrides, and bundled UI assets. Browser APIs and page structures are mocked; passing tests do not replace checks against a real proxy or live YouTube page.
+The suite covers proxy validation and authentication, settings persistence and failures, popup status updates without network requests or exposing the proxy address, stale-result protection, YouTube state transitions, page-visibility overrides, bundled UI assets, upscaler popup/session state, WebGPU frame scheduling, and pinned model hashes. Browser APIs and page structures are mocked; passing tests do not replace checks against a real proxy or live browser.
 
 ### Browser smoke checks
 
@@ -149,10 +191,11 @@ Load the repository as an unpacked extension, then check:
 1. **Popup and settings:** open settings from the popup, toggle features, reopen the page, and verify persistence. Check keyboard navigation, narrow layouts, dark styling under a light OS theme, and reduced motion.
 2. **Proxy:** test HTTP with and without authentication and SOCKS5 without authentication. Verify HTTP/HTTPS browsing and the external IP using a real server. SOCKS5 credentials must be rejected; website authentication must never receive proxy credentials.
 3. **Proxy failures:** try a wrong password and an unreachable server. Check that retries stop and disabling restores the previous proxy configuration. The popup reports the active browser configuration even when the server is unreachable. Also check conflicting proxy control and persistence after restart; test incognito separately if used.
-4. **Browser proxy status:** verify that opening the popup sends no diagnostic request in any state. Enable, change, and disable the proxy with the popup open; confirm the label, address, and type update, and conflicting proxy control is reported separately. Copy HTTP/SOCKS5 and IPv6 addresses, and check feedback when clipboard access is denied. Change feature switches and verify the enabled count updates independently of the proxy.
+4. **Browser proxy status:** verify that opening the popup sends no diagnostic request in any state. Enable, change, and disable the proxy with the popup open; confirm the status label updates without showing the server address, and conflicting proxy control is reported separately.
 5. **YouTube theater:** use an ongoing stream, hide/show chat, toggle the feature, switch viewing modes, navigate between videos without reloading, and test a narrow window, a stream without chat, and both YouTube themes.
 6. **Live chat:** check that only Live chat is offered while enabled, both choices return when disabled, a pop-out chat works, and chat replays stay unchanged.
 7. **Disable Page Visibility:** inspect `document.hidden`, `document.visibilityState`, and visibility events while switching tabs. Disable the feature, reload the page, and confirm normal behavior returns.
+8. **Video upscale:** on a website, test direct, Blob and MediaSource playback, original audio/controls, pause, seek, episode changes, nested frames, fullscreen, and clear CORS/DRM rejection. Verify stale processed frames never survive a seek. Real-series visual quality and motion need user evaluation; throughput and browser errors are measured separately.
 
 ### Repository layout
 
@@ -164,7 +207,8 @@ features/
   youtube-theater/           Player-state bridge and live-stream layout
   youtube-full-chat/         Live chat selection inside chat frames
   page-visibility/           Visibility overrides and dynamic registration
-popup/                       Proxy status and shared UI styles
+  video-upscale/             Experimental WebGPU upscaler: Rust/WASM engine, shaders, bundled models
+popup/                       Proxy status, upscaler panel and shared UI styles
 settings/                    Shared feature switches and proxy form
 assets/                      Original cat photo, PNG icons, fonts, and asset licenses
 tests/                       Dependency-free Node.js tests
@@ -180,5 +224,6 @@ A project-wide license for the extension's source code has not been selected. Bu
 - **Golos Text:** [SIL Open Font License 1.1](assets/fonts/OFL.txt).
 - **Lucide arrow icon:** [Lucide license and included notices](assets/LUCIDE-LICENSE.txt).
 - **Cat photograph:** a user-provided asset; the font and icon licenses above do not cover it.
+- **WebSR and NomosUni models, Rust/WASM crates:** [provenance and licenses](features/video-upscale/THIRD-PARTY.md).
 
 The popup and settings styling is inspired by the Neko design system.

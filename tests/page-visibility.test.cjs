@@ -70,13 +70,14 @@ test("background registers the MAIN-world script by default and follows the swit
   assert.deepEqual(calls.slice(2).map(([name]) => name), ["register", "update"]);
 });
 
-test("service worker entry loads both background features", () => {
+test("service worker entry loads the independent background features", () => {
   const manifest = JSON.parse(readFileSync("manifest.json", "utf8"));
   const loaded = [];
   vm.runInNewContext(readFileSync(manifest.background.service_worker, "utf8"), {
     importScripts: (...paths) => loaded.push(...paths),
   });
-  assert.deepEqual(loaded, ["features/proxy/background.js", "features/page-visibility/background.js"]);
+  assert.deepEqual(loaded, ["features/proxy/background.js", "features/page-visibility/background.js",
+    "features/video-upscale/inpage-background.js"]);
   assert.ok(loaded.every((path) => existsSync(path)));
   assert.ok(manifest.permissions.includes("scripting"));
 });
